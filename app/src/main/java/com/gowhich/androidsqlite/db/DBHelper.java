@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    private static String name = "mydb.db";
+    private static String name = "student.db";
     private static int version = 1;
 
     public DBHelper(Context context) {
@@ -19,7 +19,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sql = "create table student (id integer primary key autoincrement), name varchar(64), address varchar(64)";
+        String sql = "create table student (id integer primary key autoincrement, name varchar(64), address varchar(64))";
         db.execSQL(sql);
     }
 
