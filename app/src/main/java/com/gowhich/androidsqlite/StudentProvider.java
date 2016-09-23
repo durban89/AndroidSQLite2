@@ -29,7 +29,7 @@ public class StudentProvider extends ContentProvider {
 
     //定义匹配规则
     static {
-        URI_MATCHER.addURI("com.gowhich.androidsqlite.StudentProvider", "student", STUDENT);
+        URI_MATCHER.addURI("com.gowhich.androidsqlite.StudentProvider", "student/#", STUDENT);
         URI_MATCHER.addURI("com.gowhich.androidsqlite.StudentProvider", "student", STUDENTS);
     }
 
@@ -42,14 +42,40 @@ public class StudentProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        return null;
+
+        Cursor cursor = null;
+        SQLiteDatabase sqLiteDatabase = dbHelper.getReadableDatabase();
+        try{
+
+            int flag = URI_MATCHER.match(uri);
+            switch (flag){
+                case STUDENT:
+                    long id = ContentUris.parseId(uri);
+                    String whereValue = " id = " + id;
+                    if(selection != null && !selection.equals("")){
+                        whereValue += " and " + selection;
+                    }
+                    cursor = sqLiteDatabase.query("student", null, whereValue, selectionArgs, null, null, null, null);
+                    break;
+                case STUDENTS:
+                    cursor = sqLiteDatabase.query("student", null, selection, selectionArgs, null, null, null);
+                    break;
+            }
+        }catch(Exception e){
+
+        } finally {
+            if(sqLiteDatabase!=null){
+                sqLiteDatabase.close();
+            }
+        }
+        return cursor;
     }
 
     @Nullable
     @Override
     public String getType(Uri uri) {
         int flag = URI_MATCHER.match(uri);
-        switch(flag){
+        switch (flag) {
             case STUDENT:
                 return "vnd.android.cursor.item/student";
             case STUDENTS:
@@ -64,12 +90,12 @@ public class StudentProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         Uri resultUri = null;
         int flag = URI_MATCHER.match(uri);
-        switch(flag){
+        switch (flag) {
             case STUDENT:
                 break;
             case STUDENTS:
                 SQLiteDatabase database = dbHelper.getWritableDatabase();
-                long id = database.insert("student", null, values );
+                long id = database.insert("student", null, values);
                 resultUri = ContentUris.withAppendedId(uri, id);
                 break;
         }
@@ -79,11 +105,54 @@ public class StudentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        int count = -1;//影响数据库的行数
+        int flag = URI_MATCHER.match(uri);
+        SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
+        try{
+            switch (flag){
+                case STUDENT:
+                    long id = ContentUris.parseId(uri);
+                    String whereValue = " id = " + id;
+                    if(selection != null && !selection.equals("")){
+                        whereValue += " and " + selection;
+                    }
+                    count = sqLiteDatabase.delete("student", whereValue, selectionArgs);
+                    break;
+                case STUDENTS:
+                    count = sqLiteDatabase.delete("student", selection, selectionArgs);
+                    break;
+            }
+        }catch(Exception e){
+
+        }
+
+        return count;
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+        int count = -1;//影响数据库的行数
+        int flag = URI_MATCHER.match(uri);
+        SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
+
+        try{
+            switch (flag){
+                case STUDENT:
+                    long id = ContentUris.parseId(uri);
+                    String whereValue = " id = " + id;
+                    if(selection != null && !selection.equals("")){
+                        whereValue += " and " + selection;
+                    }
+                    count = sqLiteDatabase.update("student", values, whereValue, selectionArgs);
+                    break;
+                case STUDENTS:
+//                    count = sqLiteDatabase.delete("student", selection, selectionArgs);
+                    break;
+            }
+        }catch(Exception e){
+
+        }
+
+        return count;
     }
 }
